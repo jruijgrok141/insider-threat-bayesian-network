@@ -1,0 +1,277 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.3cm]{geometry}
+\linespread{1.0}
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}{8pt plus 2pt}{5pt}{\normalfont\large\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{6pt plus 2pt}{3pt}{\normalfont\normalsize\bfseries}}
+\makeatother
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\setlength{\textfloatsep}{6pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{figures/}}
+
+\title{Bayesian Network for Insider-Related\\Cyber Security Risk}
+\author{Jan Ruijgrok (852796035)\\Open Universiteit Nederland}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Security teams assessing insider threats face incomplete HR, access, and monitoring signals; shareable incident data are scarce. This report develops and evaluates a compact Bayesian network for malicious insider-related cyber security risk. Experts specify people, process, and technology links; the model updates incident probability as evidence arrives. We validate inference on expert scenarios and test structure learning and classification on synthetically generated cases. Low- and high-risk profiles separate clearly; structure recovery improves with more data but edge direction remains harder than connectivity; on small test sets no classifier clearly dominates. The work is a proof of concept for analyst prioritisation, not validation on live operations data.
+\end{abstract}
+
+\noindent\textbf{Keywords:}
+insider threat; cyber security risk; Bayesian network; noisy-OR; structure learning; classification; ROC curve; People--Process--Technology.
+
+\section*{Notation and symbols}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Main mathematical symbols.}
+\label{tab:symbols}
+\begin{tabular}{@{}lp{10.5cm}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$I$ & InsiderThreatIncident (class) \\
+$E$ & Observed evidence \\
+$P(I{=}\text{yes}\mid E)$ & Target posterior incident probability \\
+$q$, $p_i$ & Noisy-OR leak and inhibitions on the incident node \\
+$n$, $N$ & Structure-learning subset size; synthetic pool ($N{=}2000$) \\
+$AUC$, $\mathrm{F1}$ & Area under ROC curve; graph recovery score \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Network variables (eight nodes).}
+\label{tab:variables}
+\begin{tabular}{@{}llp{4.8cm}@{}}
+\toprule
+Variable & States & Description \\
+\midrule
+JobDissatisfaction & low, medium, high & Employee dissatisfaction or frustration with work or the work environment. \\
+SecurityAwareness & low, medium, high & Employee knowledge and awareness of security risks and safe behaviour. \\
+PolicyCompliance & good, poor & Extent to which employees and processes adhere to security policy. \\
+ConcerningBehaviour & no, yes & Observed behaviour suggesting possible malicious intent or misuse. \\
+PrivilegedAccess & appropriate, excessive & Whether access rights are appropriate for the role or excessively granted. \\
+TechnicalControls & weak, adequate & Strength of preventive and detective technical measures (logging, Data Loss Prevention, etc.). \\
+MonitoringAlert & no, yes & Whether monitoring generated an alert from behavioural or technical signals. \\
+InsiderThreatIncident & no, yes & Whether a malicious insider-related security incident occurred. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Introduction}
+When a security team suspects an insider threat, HR may report low morale, IAM tools may flag excessive privileged access, and monitoring may raise alerts---yet it remains unclear how likely a real incident is.
+Shareable insider-incident data are scarce \cite{chockalingam2017}, so models must combine expert judgement with partial observations rather than rely on large labelled breach corpora.
+Bayesian Networks (BNs) encode such judgement as a directed graph. They update $P(I{=}\text{yes}\mid E)$ as evidence arrives, exposing \emph{which} factors raise risk rather than a single opaque score.
+A flat classifier could rank cases. It would not, however, separate expert causal structure from fitted parameters or support transparent what-if queries when evidence changes.
+Chockalingam et al.\ \cite{chockalingam2017} find that published cyber-security BNs are typically small and expert-parameterised. Most follow a People--Process--Technology structure, focus on malicious insiders, and rarely integrate insider--outsider models.
+Earlier insider-threat BNs link dissatisfaction, behaviour, and access misuse to higher risk \cite{axelrad2013}.
+Against that background we build and test a compact eight-node network (Tables~\ref{tab:symbols}--\ref{tab:variables}). Our goal is to assess whether such an expert-built model can help analysts prioritise cases when signals are only partly visible and shareable incident data are scarce. We hypothesise that a domain-informed causal network yields interpretable risk estimates and remains competitive with data-driven alternatives on synthetically generated cases. We therefore examine scenario inference from expert probabilities, structure recovery as training data grow, incident prediction against learned and simpler classifiers on a small unseen set, and whether a parsimonious incident parameterisation preserves rising risk when more warning signs are active.
+
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Setup}
+Four steps: (1)~specify the DAG and CPTs by expert judgement and test by inference only; (2)~generate $N{=}2000$ synthetic cases from that BN because real insider logs are unavailable; (3)~run structure learning and classification on held-out subsets; (4)~compare noisy-OR with a fuller incident CPT.
+For classification we draw Train/Test $=100/100$ cases from a 300-row pool, \textbf{stratified} on~$I$.
+Learning experiments are deliberately circular---they measure recoverability of a known graph, not external validity.
+
+\subsection{Network}
+Roots capture dissatisfaction and security awareness; process compliance shapes access; people and technology indicators feed the incident node.
+Causally, dissatisfaction may precede concerning behaviour; weak controls influence both incidents and alerts.
+The incident CPT is a noisy-OR over three activators: concerning behaviour (yes), excessive privileged access, and weak technical controls.
+Figure~\ref{fig:dag} summarises the structure.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{fig01_dag.pdf}
+  \caption{Causal DAG for insider-threat risk.}
+  \label{fig:dag}
+\end{figure}
+
+\subsection{Learning}
+For each $n\in\{100,500,1000\}$, learn structure and compare to the manual DAG (skeleton/directed $F_1$, Hamming distance).
+For classification, we fix Train/Test $=100/100$ (stratified on~$I$): \emph{original} BN (expert DAG, CPTs on Train), \emph{learned} BN (Hill Climbing on Train), and \emph{naive Bayes} on the same variables. Primary metric: AUC. CPT fitting uses smoothing when 100 training rows leave parent configurations unobserved. Each experiment is repeated over 30 independent resamples (mean and 95\% percentile intervals). We compare four noisy-OR parameters with seven in a fuller logistic CPT, inspect $P(I{=}\text{yes})$ as activators turn on, and contrast Hill Climbing with MIIC for structure recovery. Domain-specific choices include a People--Process--Technology DAG, a noisy-OR incident node, and scenario evidence on the alert pathway.
+
+\subsection{Data management}
+All learning cases are simulated from the ground-truth BN ($N{=}2000$); no identifiable employee records were collected.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Inference validation}
+With the expert DAG and CPTs fixed, inference propagates evidence only. Table~\ref{tab:scenarios} and Figure~\ref{fig:scenarios} list five evidence profiles: high risk more than doubles baseline $P(I{=}\text{yes})$ ($0.74$ vs.\ $0.33$); low risk falls to $0.06$; an alert without a full pathway stays below baseline ($0.19$), consistent with the DAG. Dissatisfaction alone raises risk moderately ($0.40$). Varying the noisy-OR leak ($q\in\{0.90,0.94,0.97\}$) preserves the ordering high-risk $>$ baseline $>$ low-risk.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{2.1cm}p{5.6cm}r@{}}
+\toprule
+Scenario & Key evidence set & $P(I{=}\text{yes})$ \\
+\midrule
+Baseline & (none) & 0.334 \\
+High risk & CB=yes, PA=excessive, TC=weak & 0.743 \\
+Low risk & CB=no, PA=appropriate, TC=adequate & 0.060 \\
+Alert, low incident & MA=yes, CB=no, TC=adequate & 0.192 \\
+High dissatisfaction & JD=high & 0.403 \\
+\bottomrule
+\end{tabular}
+\caption{Scenario inference. CB = concerning behaviour; PA = privileged access; TC = technical controls; MA = monitoring alert; JD = job dissatisfaction.}
+\label{tab:scenarios}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.72\linewidth]{fig02_scenarios.pdf}
+  \caption{Incident probability by scenario.}
+  \label{fig:scenarios}
+\end{figure}
+
+\subsection{Structure recovery}
+Figure~\ref{fig:structure} and Table~\ref{tab:structure} summarise learning from random subsets. Mean skeleton $F_1$ rises with~$n$; directed recovery stays harder for Hill Climbing, whereas MIIC reaches mean directed $F_1{\approx}0.95$ at $n{=}1000$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{fig03_structure_recovery.pdf}
+  \caption{Structure recovery vs.\ $n$ (mean and 95\% CI over 30 resamples).}
+  \label{fig:structure}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}rllcc@{}}
+\toprule
+$n$ & Algo. & Skeleton $F_1$ [95\% CI] & Directed $F_1$ [95\% CI] \\
+\midrule
+100 & HC & 0.838 [0.687, 1.000] & 0.383 [0.000, 0.618] \\
+100 & MIIC & 0.854 [0.687, 1.000] & 0.352 [0.000, 0.821] \\
+500 & HC & 0.953 [0.786, 1.000] & 0.494 [0.131, 0.784] \\
+500 & MIIC & 0.996 [0.933, 1.000] & 0.761 [0.397, 1.000] \\
+1000 & HC & 0.941 [0.842, 1.000] & 0.455 [0.000, 0.838] \\
+1000 & MIIC & 1.000 [1.000, 1.000] & 0.954 [0.875, 1.000] \\
+\bottomrule
+\end{tabular}
+\caption{Structure recovery stability (mean and 95\% CI over 30 resamples).}
+\label{tab:structure}
+\end{table}
+
+Mean skeleton $F_1$ rises with~$n$ for both algorithms. Directed recovery stays harder for Hill Climbing; MIIC reaches mean directed $F_1{\approx}0.95$ at $n{=}1000$, so constraint-based search appears better suited to orientation when the ground truth is known.
+
+\subsection{Classification}
+Reference and stability results appear in Tables~\ref{tab:classifiers}--\ref{tab:class-stability} and Figures~\ref{fig:roc}--\ref{fig:class-stability}. On one split, AUC ranges from 0.683 to 0.704; over 30 resamples the 95\% intervals overlap and no classifier clearly dominates.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabular}{lcc}
+\toprule
+Model & AUC & Accuracy \\
+\midrule
+Original BN & 0.683 & 0.64 \\
+Learned BN (HC) & 0.695 & 0.64 \\
+Naive Bayes & 0.704 & 0.68 \\
+\bottomrule
+\end{tabular}
+\caption{Reference test performance on held-out cases.}
+\label{tab:classifiers}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.65\linewidth]{fig04_roc.pdf}
+  \caption{ROC curves on the reference split.}
+  \label{fig:roc}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Model & AUC [95\% CI] & Accuracy [95\% CI] \\
+\midrule
+Original BN & 0.743 [0.675, 0.798] & 0.686 [0.626, 0.733] \\
+Learned BN (HC) & 0.685 [0.468, 0.830] & 0.683 [0.640, 0.745] \\
+Naive Bayes & 0.715 [0.599, 0.796] & 0.682 [0.625, 0.750] \\
+\bottomrule
+\end{tabular}
+\caption{Classification stability over 30 resamples.}
+\label{tab:class-stability}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\linewidth]{fig06_classification_stability.pdf}
+  \caption{Distribution of AUC and accuracy over 30 resamples.}
+  \label{fig:class-stability}
+\end{figure}
+
+\subsection{Noisy-OR evaluation}
+Noisy-OR uses four parameters instead of seven while preserving monotonic multi-cause risk (Figure~\ref{fig:noisyor}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\linewidth]{fig05_noisy_or.pdf}
+  \caption{Noisy-OR scenarios and response curve.}
+  \label{fig:noisyor}
+\end{figure}
+
+\section{Conclusions and discussion}
+\label{sec:conclusions}
+
+\subsection{Summary of findings}
+This study asked whether a compact, expert-built Bayesian Network can support insider-threat prioritisation when real incident data are scarce. The results suggest a qualified yes.
+
+Scenario inference on the hand-specified model produced stable, interpretable risk estimates. High- and low-risk profiles separated clearly; intermediate cases, such as an alert without a full incident pathway, behaved in line with the DAG. That pattern supports transparent what-if reasoning rather than a single opaque score.
+
+On synthetic data generated from the same BN, structure recovery improved with sample size for both algorithms. Skeleton connectivity was recovered more reliably than edge direction. Hill Climbing showed wide directed-$F_1$ intervals at all training sizes; MIIC reached mean directed $F_1{\approx}0.95$ at $n{=}1000$. Constraint-based search therefore appears better suited to orientation when the ground truth is known.
+
+Classification on repeated stratified 100/100 splits yielded overlapping 95\% AUC intervals across the original BN, a learned BN, and naive Bayes. No classifier clearly dominated; a single reference split can rank models differently from the stability analysis.
+
+Noisy-OR reduced the incident node from seven to four free parameters while preserving monotonic multi-cause risk---a useful trade-off for interpretability and elicitation effort in a small expert model.
+
+\subsection{Limitations}
+The evaluation is deliberately inward-looking. Learning data are simulated from the same BN that defines the ground truth, so structure and classification metrics measure recoverability rather than external validity. CPTs reflect expert judgement and are not calibrated on operational insider-incident records. The scope is limited to malicious insiders in a static People--Process--Technology graph, consistent with many published models but narrower than combined insider--outsider threats \cite{chockalingam2017}; temporal evolution of HR signals and alert streams (e.g.\ via dynamic BNs) is not modelled. Train and test sets are small ($n{=}100$ each), which widens confidence intervals: overlapping 95\% AUC bands (e.g.\ original BN $0.743$ vs.\ naive Bayes $0.715$) do not support a definitive ranking of classifiers.
+
+\subsection{Implications and future work}
+Expert causal structure still earns its place under data scarcity: it explains \emph{why} a score rises when concerning behaviour and weak controls coincide, and it remains competitive on average with learned alternatives. The pipeline should be read as a proof of concept, not as validation on live security-operations data or as an autonomous detection system. Any deployment would require mandatory human review, auditability of evidence, and clear separation between prioritisation support and disciplinary action.
+
+A realistic next step is to map operational feeds---identity management, policy compliance, Data Loss Prevention and SIEM alerts---to the eight nodes and to preregister the elicitation and evaluation protocol before touching production data. CPT workshops should be documented with sensitivity analysis on key parameters such as the noisy-OR leak. Field trials could compare analyst prioritisation with and without BN scores, measuring time-to-triage and false-priority rates rather than accuracy alone.
+
+\clearpage
+\bibliographystyle{plain}
+\begin{thebibliography}{2}
+\bibitem{chockalingam2017}
+S.~Chockalingam, W.~Pieters, A.~Herdeiro Teixeira, and P.~van Gelder (2017).
+Bayesian network models in cyber security: A systematic review.
+In \emph{Proc.\ NordSec 2017} (LNCS 10674, pp.\ 105--122).
+Springer. \url{https://doi.org/10.1007/978-3-319-70290-2_7}
+\bibitem{axelrad2013}
+E.~T. Axelrad, P.~J. Sticha, O.~Brdiczka, and J.~Shen (2013).
+A Bayesian network model for predicting insider threats.
+In \emph{IEEE Security and Privacy Workshops}, pp.\ 82--89.
+\end{thebibliography}
+
+\end{document}

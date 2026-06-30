@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "Insider-threat Bayesian network (pyAgrum)"
+message: "If you use this work, please cite it as below."
+type: software
+authors:
+  - family-names: Ruijgrok
+    given-names: Jan
+repository-code: "https://github.com/jruijgrok141/insider-threat-bayesian-network"
+license: MIT
+keywords:
+  - bayesian-networks
+  - insider-threat
+  - cybersecurity
+  - pyagrum
+  - structure-learning
+abstract: >-
+  An 8-node causal Bayesian network for insider-related cyber security risk,
+  with expert parameterisation, structure learning, and classification experiments
+  using synthetic data (pyAgrum).
