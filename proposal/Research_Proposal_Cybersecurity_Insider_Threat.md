@@ -20,9 +20,9 @@ Standard (static) Bayesian Networks have become an established modelling techniq
 - **Scope:** Variables often span the **People–Process–Technology** elements of security; predictive purposes (reasoning from causes to effects) outnumber purely diagnostic uses.
 - **Applications:** Risk management, threat hunting, and forensic investigation are common; models typically remain **small** (16 of 17 use fewer than 40 nodes).
 
-Representative insider-oriented work includes psychosocial and behavioural precursors (Greitzer et al., 2012; 2010) and Bayesian models combining multiple insider indicators (Axelrad et al., 2013). This proposal does not replicate those large-scale models but **abstracts their causal logic** into a tractable 8-node network suitable for a master's assignment: explicit structure, interpretable CPTs, synthetic data for learning experiments, and classifier benchmarking.
+Representative insider-oriented work includes psychosocial and behavioural precursors and Bayesian models combining multiple insider indicators (Axelrad et al., 2013). This proposal does not replicate those large-scale models but **abstracts their causal logic** into a tractable 8-node network suitable for a master's assignment: explicit structure, interpretable CPTs, synthetic data for learning experiments, and classifier benchmarking.
 
-The modelling approach is grounded in probabilistic graphical models (Koller & Friedman, 2009), BN practice (Scutari & Denis, 2021), and the cyber-security BN landscape synthesised by Chockalingam et al. (2017).
+The modelling approach is grounded in expert causal structure and the cyber-security BN landscape synthesised by Chockalingam et al. (2017).
 
 ## Research Questions
 
@@ -73,7 +73,7 @@ TechnicalControls         → MonitoringAlert
 ConcerningBehaviour       → MonitoringAlert
 ```
 
-**Rationale (brief):** Dissatisfaction and observable concerning behaviour capture psychosocial precursors (cf. Greitzer et al.; Axelrad et al.). Security awareness and policy compliance model process discipline affecting misuse of access. Technical controls and monitoring represent detective/preventive technology layers. The incident node aggregates human and technical pathways—an interpretable proxy for “insider threat materialized” rather than a full enterprise SOC model.
+**Rationale (brief):** Dissatisfaction and observable concerning behaviour capture psychosocial precursors in line with published insider-threat BN work (Axelrad et al., 2013). Security awareness and policy compliance model process discipline affecting misuse of access. Technical controls and monitoring represent detective/preventive technology layers. The incident node aggregates human and technical pathways—an interpretable proxy for “insider threat materialized” rather than a full enterprise SOC model.
 
 ### Parameterization
 
@@ -238,10 +238,4 @@ Without an organisation willing to share **appropriate data** and SOC staff will
 
 Axelrad, E. T., Sticha, P. J., Brdiczka, O., & Shen, J. (2013). A Bayesian network model for predicting insider threats. In *2013 IEEE Security and Privacy Workshops* (pp. 82–89). IEEE.
 
-Chockalingam, S., Pieters, W., Herdeiro Teixeira, A., & van Gelder, P. (2017). Bayesian network models in cyber security: A systematic review. In H. Lipmaa, A. Mitrokotsa, & R. Matulevicius (Eds.), *Proceedings of NordSec 2017* (LNCS 10674, pp. 105–122). Springer. https://doi.org/10.1007/978-3-319-70290-2_7
-
-Greitzer, F. L., et al. (2012). Identifying at-risk employees: Modeling psychosocial precursors of potential insider threats. In *Proceedings of HICSS 2012* (pp. 2392–2401). IEEE.
-
-Koller, D., & Friedman, N. (2009). *Probabilistic Graphical Models: Principles and Techniques*. MIT Press.
-
-Scutari, M., & Denis, J.-B. (2021). *Bayesian Networks: With Examples in R* (2nd ed.). Chapman and Hall/CRC.
+Chockalingam, S., Pieters, W., Herdeiro Teixeira, A., & van Gelder, P. (2017). Bayesian network models in cyber security: A systematic review. In *Proceedings of NordSec 2017* (LNCS 10674, pp. 105–122). Springer. https://doi.org/10.1007/978-3-319-70290-2_7
