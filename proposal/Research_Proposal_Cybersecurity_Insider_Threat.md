@@ -62,11 +62,7 @@ The study tests the hypothesis and **RQ1–RQ4** stated in Section 2: whether a 
 
 Summarise inference scenarios and sensitivity findings against expert expectations (**RQ1**). Compare structure-recovery metrics across n and algorithms, emphasising skeleton vs. directed recovery (**RQ2**). Plot ROC curves and compare AUC intervals across classifiers (**RQ3**). Contrast noisy-OR and full CPT parameterisations on complexity and monotonic multi-cause risk (**RQ4**). Interpret all learning results as recoverability on synthetic data, not external validation on operational insider-incident records.
 
-## 4 Time schedule (10 weeks)
-
-The schedule mirrors Section 3 (Research method). Weeks 1–2 cover literature, variable specification, and DAG design. Week 3 implements CPTs and Task 1 inference. Week 4 builds the synthetic data pipeline. Weeks 5–6 run structure-learning experiments at \(n=100\), \(500\), and \(1000\). Week 7 runs classifiers and ROC/AUC analysis. Week 8 covers sensitivity analysis, noisy-OR evaluation, and limitations. Weeks 9–10 deliver the written report and freeze the notebook and exported figures as reproducible artifacts.
-
-## 5 Risk analysis
+## 4 Risk analysis
 
 ### Oversimplification of insider threat
 
