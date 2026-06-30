@@ -1,7 +1,7 @@
 # Report: Bayesian Network for Insider-Related Cyber Security Risk
 
 **Course:** Bayesian Reasoning and Learning  
-**Author:** Jan Ruijgrok (852796035)  
+**Author:** Jan Ruijgrok  
 **Institution:** Open Universiteit Nederland  
 **Language:** English  
 **Target length:** ~6 pages (main text; appendix optional)
@@ -196,6 +196,12 @@ The evaluation is inward-looking: simulated learning data measure recoverability
 ### 4.3 Implications and future work
 
 Expert causal structure explains *why* risk rises and remains competitive on average with learned alternatives. The pipeline is a proof of concept, not validation on live security-operations data; deployment would require human review and auditability. A realistic next step is to map operational feeds to the eight nodes, preregister elicitation and evaluation, document CPT workshops with sensitivity analysis, and trial analyst-facing scores with mandatory human review.
+
+---
+
+## Data and code availability
+
+All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at [https://github.com/jruijgrok141/insider-threat-bayesian-network](https://github.com/jruijgrok141/insider-threat-bayesian-network) (MIT license). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
 
 ---
 

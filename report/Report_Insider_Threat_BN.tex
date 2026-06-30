@@ -22,7 +22,7 @@
 \graphicspath{{figures/}}
 
 \title{Bayesian Network for Insider-Related\\Cyber Security Risk}
-\author{Jan Ruijgrok (852796035)\\Open Universiteit Nederland}
+\author{Jan Ruijgrok\\Open Universiteit Nederland}
 \date{June 2026}
 
 \begin{document}
@@ -259,6 +259,11 @@ The evaluation is deliberately inward-looking. Learning data are simulated from 
 Expert causal structure still earns its place under data scarcity: it explains \emph{why} a score rises when concerning behaviour and weak controls coincide, and it remains competitive on average with learned alternatives. The pipeline should be read as a proof of concept, not as validation on live security-operations data or as an autonomous detection system. Any deployment would require mandatory human review, auditability of evidence, and clear separation between prioritisation support and disciplinary action.
 
 A realistic next step is to map operational feeds---identity management, policy compliance, Data Loss Prevention and SIEM alerts---to the eight nodes and to preregister the elicitation and evaluation protocol before touching production data. CPT workshops should be documented with sensitivity analysis on key parameters such as the noisy-OR leak. Field trials could compare analyst prioritisation with and without BN scores, measuring time-to-triage and false-priority rates rather than accuracy alone.
+
+\section*{Data and code availability}
+\label{sec:data-code}
+
+All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at \href{https://github.com/jruijgrok141/insider-threat-bayesian-network}{github.com/jruijgrok141/insider-threat-bayesian-network} (MIT license). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
 
 \clearpage
 \bibliographystyle{plain}
