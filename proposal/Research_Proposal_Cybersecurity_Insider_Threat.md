@@ -1,6 +1,6 @@
 # Research Proposal: Bayesian Network for Insider-Related Cyber Security Risk
 
-Jan Ruijgrok (852796035)  
+Jan Ruijgrok  
 Open Universiteit Nederland
 
 ## Abstract
