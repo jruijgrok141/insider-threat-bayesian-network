@@ -1,210 +1,132 @@
 \documentclass[11pt,a4paper]{article}
 
-\usepackage[margin=2.7cm]{geometry}
+\usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{mathptmx}
 \usepackage{amsmath}
-\usepackage{booktabs}
+\usepackage{graphicx}
 \usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
 
-\setlength{\parindent}{1.5em}
-\setlength{\parskip}{0pt}
-\linespread{1.05}
-\setlength{\headheight}{14pt}
-\pagestyle{myheadings}
-\markboth{\small\MakeUppercase{Bayesian Network for Insider-Related Cyber Security Risk}}{\small\thepage}
-\setlength{\abovedisplayskip}{8pt}
-\setlength{\belowdisplayskip}{8pt}
-\setlength{\abovedisplayshortskip}{6pt}
-\setlength{\belowdisplayshortskip}{6pt}
-\makeatletter
-\renewcommand\section{\@startsection{section}{1}{\z@}%
-  {12pt plus 2pt minus 1pt}{4pt plus 1pt minus 1pt}{\normalfont\bfseries\centering}}
-\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
-  {10pt plus 1pt minus 1pt}{3pt plus 1pt minus 1pt}{\normalfont\bfseries}}
-\makeatother
-\emergencystretch=1.5em
+\setcounter{secnumdepth}{2}
+\graphicspath{{../report/figures/}}
+
+\title{Research proposal: Insider-related cyber security risk with Bayesian networks}
+\author{Jan Ruijgrok\\Open Universiteit Nederland}
+\date{}
 
 \begin{document}
-\begin{center}
-{\Large Research proposal: Insider-related cyber security risk with Bayesian networks}\\[4pt]
-Jan Ruijgrok\\
-Open Universiteit of the Netherlands
-\end{center}
+\maketitle
 
-\section*{Abstract}
+\begin{abstract}
 Cyber security incidents are difficult to model statistically because breach and insider-threat data are scarce and rarely shared. Bayesian Networks (BNs) are nevertheless widely used in this domain because they combine expert knowledge with limited evidence and support inference under partial observability. Following a systematic review of standard BN models in cyber security (Chockalingam et al., 2017), this project develops a compact, causally motivated BN (8 nodes) for malicious insider-related security risk in an organizational IT environment. The central objective is to assess whether a manually designed BN yields both (i) plausible probabilistic inferences and (ii) competitive classification performance relative to learned structures and a naive Bayes baseline. Methodologically, the proposal follows the course assignment: (1) design and validation of an original BN in pyAgrum, (2) structure-learning experiments at $n=100$, $500$, and $1000$, and (3) classifier comparison using ROC/AUC.
+\end{abstract}
 
-\section*{Background}
-Chockalingam et al.\ (2017) identified 17 standard BN models in cyber security and analysed them on eight characteristics (data sources, node count, threat actor, application, variable scope, validation, and purpose). Key findings: expert knowledge dominates CPT specification; models focus disproportionately on \emph{malicious insiders}; variables often span People--Process--Technology; most models remain small ($<$40 nodes). Integrated insider--outsider models are largely absent---a gap this compact model acknowledges but does not fully address.
+\section{Background}
 
-Representative insider work includes psychosocial precursors and multi-indicator threat models (Axelrad et al., 2013). This project abstracts that logic into an 8-node DAG suitable for the assignment: interpretable structure, expert CPTs, synthetic learning experiments, and classifier benchmarking.
+Standard (static) Bayesian Networks have become an established modelling technique in cyber and information security. Chockalingam et al.\ (2017) identified 17 standard BN models in the literature and analysed them along eight characteristics, including data sources for DAGs and CPTs, threat-actor type, application area, and validation approach. Their main findings are directly relevant to this project: historical incident data are limited and expert knowledge dominates CPT specification in most reviewed models; standard BNs focus disproportionately on malicious insiders while integrated insider--outsider models remain a gap; variables often span People--Process--Technology; and most models remain small (fewer than 40 nodes).
 
-\section*{Research questions}
-\textbf{Working hypothesis:} A domain-informed causal BN is an interpretable baseline for insider-related incident risk; structure learning adds recovery and predictive value mainly at larger $n$.
+Representative insider-oriented work includes psychosocial and behavioural precursors and Bayesian models combining multiple insider indicators (Axelrad et al., 2013). This project does not replicate those large-scale models but abstracts their causal logic into a tractable 8-node network suitable for the assignment: explicit structure, interpretable CPTs, synthetic data for learning experiments, and classifier benchmarking.
 
-\begin{itemize}
-  \item \textbf{RQ1 (Model validity):} Does the manual BN yield plausible marginals, conditionals, and coherent effects for $P(\text{InsiderThreatIncident}=\text{yes}\mid\text{evidence})$?
-  \item \textbf{RQ2 (Structure learning):} How well do search-and-score and constraint-based methods recover the true structure at $n=100$, $500$, and $1000$?
-  \item \textbf{RQ3 (Classification):} How do ROC/AUC compare for the original BN, a learned BN, and naive Bayes on a held-out set?
-  \item \textbf{RQ4 (Noisy-OR):} Does noisy-OR parameterization of \texttt{InsiderThreatIncident} reduce CPT complexity while preserving plausible, monotonic risk accumulation vs.\ a full tabular CPT?
+What remains difficult in practice is to judge when a compact expert-built BN is ``good enough'' for analyst prioritisation under data scarcity. A flat classifier could rank cases but would not separate causal structure from parameters or support transparent what-if queries. Agent-based style evaluation is not applicable here; instead, pyAgrum provides a numerical laboratory for inference, structure recovery, and classification on synthetically generated cases drawn from the same ground-truth network (see Figure~\ref{fig:dag}).
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.72\textwidth]{fig01_dag.pdf}
+  \caption{Proposed 8-node causal DAG for malicious insider-related cyber security risk (People--Process--Technology scope).}
+  \label{fig:dag}
+\end{figure}
+
+Within this setting the project compares expert-specified inference and scenario validation (Task~1) with structure-learning and classifier benchmarks (Task~2.2), plus a noisy-OR parameterisation of the incident node (RQ4). All learning data are synthetic; the work is a proof of concept, not operational SOC validation.
+
+\section{Research question}
+
+\textbf{Working hypothesis:} A domain-informed causal BN is an interpretable baseline for insider-related incident risk; structure learning adds structural recovery and predictive value mainly at larger sample sizes $n$.
+
+We address the following research questions:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{RQ1 (Model validity).} Does the manual BN yield plausible marginals, conditionals, and coherent effects for $P(\text{InsiderThreatIncident}=\text{yes}\mid\text{evidence})$?
+  \item \textbf{RQ2 (Structure learning).} How well do search-and-score (hill climbing + BIC) and constraint-based (MIIC) methods recover the true structure at $n=100$, $500$, and $1000$?
+  \item \textbf{RQ3 (Classification).} How do ROC/AUC compare for the original BN, a learned BN, and naive Bayes on a held-out test set (train/test $=100/100$)?
+  \item \textbf{RQ4 (Noisy-OR).} Does noisy-OR parameterization of \texttt{InsiderThreatIncident} reduce CPT complexity while preserving plausible, monotonic risk accumulation vs.\ a full tabular CPT?
 \end{itemize}
 
-\section*{Research methods}
-\subsection*{Method overview}
-\renewcommand{\arraystretch}{1.2}
-\begin{center}
-\begin{tabular}{|p{0.28\textwidth}|p{0.64\textwidth}|}
-\hline
-\textbf{Component} & \textbf{Specification} \\
-\hline
-Target quantity & $P(\text{InsiderThreatIncident}=\text{yes}\mid\text{evidence})$; binary class \textbf{InsiderThreatIncident}. \\
-\hline
-Design principle & 8-node causal BN; People--Process--Technology scope (Chockalingam et al., 2017). \\
-\hline
-Parameter strategy & Expert judgement, monotonic relations where appropriate, limited plausibility calibration. \\
-\hline
-Software & pyAgrum: inference, structure learning, classification. \\
-\hline
-Literature anchor & Chockalingam et al.\ (2017); Axelrad et al.\ (2013). \\
-\hline
-\end{tabular}
-\end{center}
+\section{Research method}
+\label{sec:research-method}
 
-\subsection*{Variables and state spaces}
-\begin{center}
-\scriptsize
-\begin{tabular}{|p{0.22\textwidth}|p{0.16\textwidth}|p{0.12\textwidth}|p{0.42\textwidth}|}
-\hline
-\textbf{Variable} & \textbf{States} & \textbf{P--P--T} & \textbf{Description} \\
-\hline
-JobDissatisfaction & \{low, medium, high\} & People & Employee dissatisfaction or frustration with work or the work environment. \\
-\hline
-SecurityAwareness & \{low, medium, high\} & People & Employee knowledge and awareness of security risks and safe behaviour. \\
-\hline
-PolicyCompliance & \{good, poor\} & Process & Extent to which employees and processes adhere to security policy. \\
-\hline
-ConcerningBehaviour & \{no, yes\} & People & Observed behaviour suggesting possible malicious intent or misuse. \\
-\hline
-PrivilegedAccess & \{appropriate, excessive\} & Tech./Process & Whether access rights are appropriate for the role or excessively granted. \\
-\hline
-TechnicalControls & \{weak, adequate\} & Technology & Strength of preventive and detective technical measures (logging, DLP, etc.). \\
-\hline
-MonitoringAlert & \{no, yes\} & Technology & Whether monitoring generated an alert from behavioural or technical signals. \\
-\hline
-InsiderThreatIncident & \{no, yes\} & Outcome & Whether a malicious insider-related security incident occurred. \\
-\hline
-\end{tabular}
-\end{center}
+\subsection*{Problem and research questions}
 
-\subsection*{Initial causal structure}
-\begin{center}
-\begin{tabular}{|p{0.9\textwidth}|}
-\hline
-\textbf{Directed arcs} \\
-\hline
-JobDissatisfaction $\rightarrow$ ConcerningBehaviour; SecurityAwareness $\rightarrow$ PolicyCompliance; PolicyCompliance $\rightarrow$ PrivilegedAccess; ConcerningBehaviour $\rightarrow$ InsiderThreatIncident; PrivilegedAccess $\rightarrow$ InsiderThreatIncident; TechnicalControls $\rightarrow$ InsiderThreatIncident; TechnicalControls $\rightarrow$ MonitoringAlert; ConcerningBehaviour $\rightarrow$ MonitoringAlert. \\
-\hline
-\end{tabular}
-\end{center}
-Dissatisfaction and behaviour capture psychosocial precursors; awareness and compliance model process discipline; controls and alerts model technology; the incident node aggregates pathways to a materialized insider-related event.
+The study tests the hypothesis and \textbf{RQ1}--\textbf{RQ4} stated in Section~2: whether a compact expert BN supports plausible inference and whether standard learning procedures recover structure and predict incidents on synthetic data at small and moderate training sizes. The target quantity is $P(\text{InsiderThreatIncident}=\text{yes}\mid\text{evidence})$ with binary class variable \textbf{InsiderThreatIncident}. The design is an 8-node causal DAG integrating People, Process, and Technology factors (Chockalingam et al., 2017; Axelrad et al., 2013).
 
-\subsection*{Task 1: Inference in pyAgrum}
-\begin{center}
-\begin{tabular}{|p{0.42\textwidth}|p{0.5\textwidth}|}
-\hline
-\textbf{Element} & \textbf{Operationalization} \\
-\hline
-Marginals & Baseline probabilities for all nodes. \\
-\hline
-Conditionals & e.g.\ $P(\text{InsiderThreatIncident}\mid\text{ConcerningBehaviour},\text{PrivilegedAccess})$. \\
-\hline
-Scenarios & Evidence propagation (e.g., alert + excessive access). \\
-\hline
-Sensitivity & Perturb key CPT entries. \\
-\hline
-\end{tabular}
-\end{center}
+\subsection*{Research setup}
 
-\subsection*{Task 2.2: Learning and classification}
-\begin{center}
-\begin{tabular}{|p{0.3\textwidth}|p{0.62\textwidth}|}
-\hline
-\textbf{Block} & \textbf{Specification} \\
-\hline
-Data & Synthetic samples from ground-truth BN; structure sets $n=100,500,1000$; classifier train/test split. \\
-\hline
-Algorithms & Hill climbing (search-and-score); PC-style (constraint-based). \\
-\hline
-Structure eval & Arc differences vs.\ ground truth (correct, missing, reversed, spurious). \\
-\hline
-Classifiers & Original BN; learned BN; naive Bayes. \\
-\hline
-Metrics & ROC/AUC (primary); optional accuracy, confusion matrix. \\
-\hline
-\end{tabular}
-\end{center}
-
-\subsection*{Positioning vs.\ Chockalingam et al.\ (2017)}
-\begin{center}
-\begin{tabular}{|p{0.38\textwidth}|p{0.5\textwidth}|}
-\hline
-\textbf{Review finding} & \textbf{Project response} \\
-\hline
-Expert-heavy CPTs & Documented expert elicitation \\
-\hline
-Malicious insider focus & Core theme \\
-\hline
-Small models & 8 nodes \\
-\hline
-Insider--outsider gap & Limitation; see Future Work roadmap \\
-\hline
-\end{tabular}
-\end{center}
-
-\section*{Expected contributions}
-\begin{itemize}
-  \item Interpretable insider-risk BN with explicit P--P--T assumptions;
-  \item Structure-learning robustness evidence at small/moderate $n$;
-  \item Comparison of causal, learned, and naive Bayes classifiers;
-  \item Reproducible pyAgrum workflow for the course assignment.
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Model world.} Eight discrete nodes: \texttt{JobDissatisfaction}, \texttt{SecurityAwareness}, \texttt{PolicyCompliance}, \texttt{ConcerningBehaviour}, \texttt{PrivilegedAccess}, \texttt{TechnicalControls}, \texttt{MonitoringAlert}, \texttt{InsiderThreatIncident}. Directed arcs follow the DAG in Figure~\ref{fig:dag}.
+  \item \textbf{Inference process.} Expert-specified CPTs in pyAgrum; optional noisy-OR on the incident node over activators \texttt{ConcerningBehaviour=yes}, \texttt{PrivilegedAccess=excessive}, \texttt{TechnicalControls=weak}.
+  \item \textbf{What we vary.} (i)~Training size for structure learning: $n\in\{100,500,1000\}$. (ii)~Learning algorithm: hill climbing (search-and-score) vs.\ MIIC (constraint-based). (iii)~Classifier type: original BN, learned BN, naive Bayes.
+  \item \textbf{What we keep fixed.} Ground-truth DAG and expert CPTs for data generation; stratified train/test split $100/100$ for classification; random seed protocol documented in the notebook.
+  \item \textbf{Reference structure.} The hand-built DAG is the ground truth for structure-recovery metrics (skeleton/directed $F_1$, Hamming distance, visual comparison).
 \end{itemize}
 
-\subsection*{Task 2.3: Noisy-OR (required)}
-\begin{center}
-\begin{tabular}{|p{0.9\textwidth}|}
-\hline
-\textbf{Noisy-OR on \texttt{InsiderThreatIncident}} \\
-\hline
-Activators: \texttt{ConcerningBehaviour=yes}, \texttt{PrivilegedAccess=excessive}, \texttt{TechnicalControls=weak}. \\
-$P(I{=}\text{no}\mid\cdot)=\text{leak}\times\prod_i \text{inhibition}_i$ for active causes; compare with full logistic CPT (parameter count, scenarios, response curves). \\
-\hline
-\end{tabular}
-\end{center}
+\subsection*{Measurement and comparison}
 
-\section*{Time schedule (10 weeks)}
-Weeks 1--2: literature and structure; Week 3: CPTs and Task 1; Week 4: data pipeline; Weeks 5--6: learning experiments; Week 7: classifiers; Week 8: sensitivity; Weeks 9--10: report.
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Task 1 outputs.} Marginals, conditional queries, scenario table (high/low/intermediate risk profiles), and sensitivity analysis on key CPT entries (e.g.\ noisy-OR leak).
+  \item \textbf{Structure recovery.} Per-$n$ metrics and side-by-side graphs vs.\ ground truth; stability over repeated resamples where reported.
+  \item \textbf{Classification.} ROC curves and AUC for original, learned, and naive Bayes models; optional accuracy and confusion matrix.
+  \item \textbf{Noisy-OR evaluation.} Parameter count, scenario rankings, and response curve vs.\ full tabular CPT on the incident node.
+  \item \textbf{Link to RQ1--RQ4.} \textbf{RQ1}: scenario and sensitivity results. \textbf{RQ2}: structure-recovery tables and figures. \textbf{RQ3}: ROC/AUC comparison. \textbf{RQ4}: noisy-OR parsimony and monotonicity checks.
+\end{itemize}
 
-\section*{Risk analysis}
-Oversimplification of insider threat (scope boundaries); subjective CPTs (sensitivity, monotonicity); small-$n$ instability (multiple seeds); simulation circularity (transparent protocol, interpret AUC as method comparison).
+\subsection*{Execution}
 
-\section*{Future work and roadmap toward SOC-relevant deployment}
-The present project is a \textbf{proof of concept}: an interpretable, compact BN on synthetic data, not an operational SOC product. The same approach---causal structure, uncertainty, and explanations---can nonetheless support insider-threat workflows. A realistic path comprises four stages.
+\begin{itemize}[leftmargin=*]
+  \item Specify variables, arcs, and CPTs; implement the BN in pyAgrum (Task~1).
+  \item Run inference, scenarios, and sensitivity analysis; export figures for the report.
+  \item Generate synthetic databases from the ground-truth BN; run hill climbing and MIIC at $n=100,500,1000$.
+  \item Train and evaluate classifiers on stratified $100/100$ splits; compute ROC/AUC and stability intervals.
+  \item Document the full pipeline in a reproducible Jupyter notebook; write the short report.
+\end{itemize}
 
-\textbf{Stage 1 (semi-real data).} Integrate HR/people signals, IAM (privileged access), GRC (compliance), and SIEM/UEBA (controls, alerts). Combine expert elicitation with limited historical cases; evaluate analyst usefulness, not only ROC on synthetic data.
+\subsection*{Data analysis}
 
-\textbf{Stage 2 (analyst MVP).} Deliver risk scores with top causal explanations; deploy as SIEM/SOAR enrichment or a dashboard; keep human-in-the-loop. Product forms: scoring plugin, prioritisation dashboard, or what-if simulator for interventions (access review, monitoring).
+Summarise inference scenarios and sensitivity findings against expert expectations (\textbf{RQ1}). Compare structure-recovery metrics across $n$ and algorithms, emphasising skeleton vs.\ directed recovery (\textbf{RQ2}). Plot ROC curves and compare AUC intervals across classifiers (\textbf{RQ3}). Contrast noisy-OR and full CPT parameterisations on complexity and monotonic multi-cause risk (\textbf{RQ4}). Interpret all learning results as recoverability on synthetic data, not external validation on operational insider-incident records.
 
-\textbf{Stage 3 (technical extensions).} Address literature gaps (Chockalingam et al., 2017): insider--outsider models (phishing, collusion), temporal/dynamic extensions, optional attack-path layers, and sector variants (e.g., ICS).
+\section{Time schedule (10 weeks)}
 
-\textbf{Stage 4 (operational trust).} Drift monitoring, configurable false-positive budgets, privacy governance (DPIA, data minimisation), and validation via red-team/tabletop exercises.
+The schedule mirrors Section~\ref{sec:research-method} (Research method). Weeks~1--2 cover literature, variable specification, and DAG design. Week~3 implements CPTs and Task~1 inference. Week~4 builds the synthetic data pipeline. Weeks~5--6 run structure-learning experiments at $n=100$, $500$, and $1000$. Week~7 runs classifiers and ROC/AUC analysis. Week~8 covers sensitivity analysis, noisy-OR evaluation, and limitations. Weeks~9--10 deliver the written report and freeze the notebook and exported figures as reproducible artifacts.
 
-\textbf{Carry-over from this project.} The 8-node P--P--T DAG, noisy-OR incident composition, scenario/sensitivity analysis, and causal-vs.-learned comparison provide a defensible template for explainable prioritisation---provided future work secures data, workflow integration, and organisational adoption. Without those, the model remains academic regardless of network size.
+\section{Risk analysis}
 
-\section*{References}
-Axelrad, E. T., Sticha, P. J., Brdiczka, O., \& Shen, J. (2013). A Bayesian network model for predicting insider threats. In \textit{2013 IEEE Security and Privacy Workshops} (pp.\ 82--89). IEEE.
+\subsection*{Oversimplification of insider threat}
 
-Chockalingam, S., Pieters, W., Herdeiro Teixeira, A., \& van Gelder, P. (2017). Bayesian network models in cyber security: A systematic review. In \textit{Proceedings of NordSec 2017} (LNCS 10674, pp.\ 105--122). Springer. \url{https://doi.org/10.1007/978-3-319-70290-2_7}
+The 8-node static model cannot represent full enterprise SOC complexity or insider--outsider collusion; scope must remain explicit. Mitigation: cite review gaps (Chockalingam et al., 2017); position the work as proof of concept, not operational deployment.
+
+\subsection*{Subjective CPTs}
+
+Expert judgement dominates parameters; miscalibration could distort absolute risk levels. Mitigation: monotonicity checks, sensitivity analysis on key entries, and comparison with parameters learned on training data.
+
+\subsection*{Small-$n$ structure instability}
+
+Structure learning at $n=100$ may yield spurious or reversed arcs; single runs can mislead. Mitigation: multiple random seeds; report stability intervals and visual diffs rather than one-off graphs.
+
+\subsection*{Simulation circularity}
+
+Learning data are generated from the same BN used as ground truth, so metrics measure recoverability, not external validity. Mitigation: transparent generation protocol; interpret AUC as method comparison, not proof of SOC performance.
+
+\begin{thebibliography}{2}
+\bibitem{axelrad2013}
+E.~T. Axelrad, P.~J. Sticha, O.~Brdiczka, and J.~Shen (2013).
+A Bayesian network model for predicting insider threats.
+In \emph{IEEE Security and Privacy Workshops}, pp.\ 82--89.
+
+\bibitem{chockalingam2017}
+S.~Chockalingam, W.~Pieters, A.~Herdeiro Teixeira, and P.~van Gelder (2017).
+Bayesian network models in cyber security: A systematic review.
+In \emph{Proc.\ NordSec 2017} (LNCS 10674, pp.\ 105--122).
+Springer. \url{https://doi.org/10.1007/978-3-319-70290-2_7}
+\end{thebibliography}
 
 \end{document}
