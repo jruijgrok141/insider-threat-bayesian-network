@@ -200,7 +200,7 @@ $n$ & Algo. & Skeleton $F_1$ [95\% CI] & Directed $F_1$ [95\% CI] \\
 \label{tab:structure}
 \end{table}
 
-Mean skeleton $F_1$ rises with~$n$ for both algorithms. Directed recovery stays harder for Hill Climbing; MIIC reaches mean directed $F_1{\approx}0.96$ at $n{=}1000$, so constraint-based search appears better suited to orientation when the ground truth is known.
+Mean skeleton $F_1$ rises with~$n$ for both algorithms; MIIC reaches mean directed $F_1{\approx}0.96$ at $n{=}1000$ (Table~\ref{tab:structure}).
 
 \subsection{Classification}
 Reference and stability results appear in Tables~\ref{tab:classifiers}--\ref{tab:class-stability} and Figures~\ref{fig:roc}--\ref{fig:class-stability}. On one split, AUC ranges from 0.696 to 0.746; over 30 resamples the 95\% intervals overlap and no classifier clearly dominates.
@@ -247,7 +247,7 @@ Naive Bayes & 0.720 [0.585, 0.826] & 0.695 [0.605, 0.788] \\
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.75\linewidth]{fig06_classification_stability.pdf}
+  \includegraphics[width=0.70\linewidth]{fig06_classification_stability.pdf}
   \caption{Distribution of AUC and accuracy over 30 resamples.}
   \label{fig:class-stability}
 \end{figure}
@@ -257,7 +257,7 @@ Noisy-OR uses four parameters instead of seven while preserving monotonic multi-
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.78\linewidth]{fig05_noisy_or.pdf}
+  \includegraphics[width=0.72\linewidth]{fig05_noisy_or.pdf}
   \caption{Noisy-OR scenarios and response curve.}
   \label{fig:noisyor}
 \end{figure}
@@ -266,28 +266,16 @@ Noisy-OR uses four parameters instead of seven while preserving monotonic multi-
 \label{sec:conclusions}
 
 \subsection{Summary of findings}
-This study asked whether a compact, expert-built Bayesian Network can support insider-threat prioritisation when real incident data are scarce. The results suggest a qualified yes.
-
-Scenario inference on the hand-specified model produced stable, interpretable risk estimates. High- and low-risk profiles separated clearly; intermediate cases, such as an alert without a full incident pathway, behaved in line with the DAG. That pattern supports transparent what-if reasoning rather than a single opaque score.
-
-On synthetic data generated from the same BN, structure recovery improved with sample size for both algorithms. Skeleton connectivity was recovered more reliably than edge direction. Hill Climbing showed wide directed-$F_1$ intervals at all training sizes; MIIC reached mean directed $F_1{\approx}0.95$ at $n{=}1000$. Constraint-based search therefore appears better suited to orientation when the ground truth is known.
-
-Classification on repeated stratified 100/100 splits yielded overlapping 95\% AUC intervals across the original BN, a learned BN, and naive Bayes. No classifier clearly dominated; a single reference split can rank models differently from the stability analysis.
-
-Noisy-OR reduced the incident node from seven to four free parameters while preserving monotonic multi-cause risk---a useful trade-off for interpretability and elicitation effort in a small expert model.
+This study asked whether a compact, expert-built Bayesian Network can support insider-threat prioritisation when real incident data are scarce. The results suggest a qualified yes. Scenario inference produced stable, interpretable risk estimates; high- and low-risk profiles separated clearly. On synthetic data, skeleton recovery improved with sample size; directed recovery stayed harder for Hill Climbing while MIIC reached mean directed $F_1{\approx}0.95$ at $n{=}1000$. Classification intervals overlapped across models. Noisy-OR offered a parsimonious incident parameterisation with monotonic multi-cause risk.
 
 \subsection{Limitations}
-The evaluation is deliberately inward-looking. Learning data are simulated from the same BN that defines the ground truth, so structure and classification metrics measure recoverability rather than external validity. CPTs reflect expert judgement and are not calibrated on operational insider-incident records. The scope is limited to malicious insiders in a static People--Process--Technology graph, consistent with many published models but narrower than combined insider--outsider threats \cite{chockalingam2017}; temporal evolution of HR signals and alert streams (e.g.\ via dynamic BNs) is not modelled. Train and test sets are small ($n{=}100$ each), which widens confidence intervals: overlapping 95\% AUC bands (e.g.\ original BN $0.735$ vs.\ naive Bayes $0.720$) do not support a definitive ranking of classifiers.
+The evaluation is inward-looking: simulated learning data measure recoverability of a known graph, not external validity; CPTs reflect expert judgement, not operational calibration. The scope is a static malicious-insider People--Process--Technology graph \cite{chockalingam2017}; temporal HR and alert dynamics are not modelled. Small train and test sets ($n{=}100$ each) widen intervals: overlapping 95\% AUC bands (e.g.\ original BN $0.735$ vs.\ naive Bayes $0.720$) do not support definitive classifier ranking.
 
 \subsection{Implications and future work}
-Expert causal structure still earns its place under data scarcity: it explains \emph{why} a score rises when concerning behaviour and weak controls coincide, and it remains competitive on average with learned alternatives. The pipeline should be read as a proof of concept, not as validation on live security-operations data or as an autonomous detection system. Any deployment would require mandatory human review, auditability of evidence, and clear separation between prioritisation support and disciplinary action.
+Expert causal structure explains \emph{why} risk rises and remains competitive on average with learned alternatives. The pipeline is a proof of concept, not validation on live security-operations data; deployment would require human review and auditability. A realistic next step is to map operational feeds to the eight nodes, preregister elicitation and evaluation, document CPT workshops with sensitivity analysis, and trial analyst-facing scores with mandatory human review.
 
-A realistic next step is to map operational feeds---identity management, policy compliance, Data Loss Prevention and SIEM alerts---to the eight nodes and to preregister the elicitation and evaluation protocol before touching production data. CPT workshops should be documented with sensitivity analysis on key parameters such as the noisy-OR leak. Field trials could compare analyst prioritisation with and without BN scores, measuring time-to-triage and false-priority rates rather than accuracy alone.
-
-\section*{Data and code availability}
-\label{sec:data-code}
-
-All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at \href{https://github.com/jruijgrok141/insider-threat-bayesian-network}{github.com/jruijgrok141/insider-threat-bayesian-network} (MIT license). Numeric tables in \S\ref{sec:results} match \texttt{report/figures/*.csv}, generated by \texttt{report/export\_figures.py} (structure stability uses 30 resamples there; the notebook reproduces classification stability and single-run structure learning). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
+\noindent\textbf{Data and code availability.}
+All analysis code, the reproducible Jupyter notebook, and exported figures are at \href{https://github.com/jruijgrok141/insider-threat-bayesian-network}{github.com/jruijgrok141/insider-threat-bayesian-network} (MIT license). Tables in \S\ref{sec:results} match \texttt{report/figures/*.csv} from \texttt{export\_figures.py} and pinned synthetic data; no identifiable employee records were used.
 
 \clearpage
 \bibliographystyle{plain}
