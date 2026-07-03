@@ -1,0 +1,1 @@
+[{"seed": 46, "Model": "Original BN + noisy-OR CPT", "AUC": 0.6487912087912088, "Accuracy": 0.58}, {"seed": 46, "Model": "Learned BN HC", "AUC": 0.5516483516483516, "Accuracy": 0.58}, {"seed": 46, "Model": "Naive Bayes", "AUC": 0.6235164835164836, "Accuracy": 0.59}]

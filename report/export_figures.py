@@ -2,11 +2,26 @@
 from __future__ import annotations
 
 import itertools
+import json
 import os
+
+# Single-thread BLAS/OpenMP avoids rare non-deterministic reductions in learners.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
+
+import sys
 import tempfile
 from pathlib import Path
 
 import re
+
+import subprocess
+
+_REPORT_DIR = Path(__file__).resolve().parent
+if str(_REPORT_DIR) not in sys.path:
+    sys.path.insert(0, str(_REPORT_DIR))
 
 import matplotlib
 
@@ -23,12 +38,23 @@ import seaborn as sns
 from sklearn.metrics import accuracy_score, auc, roc_curve
 from sklearn.model_selection import train_test_split
 
+from reproducibility import (
+    CLASSIFICATION_STABILITY_CACHE,
+    DEFAULT_SEED,
+    N_SYNTHETIC_CASES,
+    SYNTHETIC_CASES_CSV,
+    draw_synthetic_cases,
+    load_synthetic_cases,
+    set_global_seed,
+)
+
 TARGET = "InsiderThreatIncident"
-SEED = 42
+SEED = DEFAULT_SEED
 N_STABILITY_RUNS = 30
 STABILITY_SEEDS = list(range(SEED, SEED + N_STABILITY_RUNS))
 CI_LO, CI_HI = 2.5, 97.5
 FIG_DIR = Path(__file__).resolve().parent / "figures"
+WORKER = Path(__file__).resolve().parent / "classification_stability_worker.py"
 
 states = {
     "JobDissatisfaction": ["low", "medium", "high"],
@@ -340,7 +366,8 @@ def summarize_by_group(df, group_cols, metrics):
     return pd.DataFrame(rows)
 
 
-def structure_metrics_for_sample(bn, arcs, sample_n):
+def structure_metrics_for_sample(bn, arcs, sample_n, seed=SEED):
+    set_global_seed(seed)
     true_sk = skeleton(arcs)
     tf = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
     tf.close()
@@ -348,9 +375,11 @@ def structure_metrics_for_sample(bn, arcs, sample_n):
     learner_hc = gum.BNLearner(tf.name)
     learner_hc.useGreedyHillClimbing()
     learner_hc.useScoreBIC()
+    set_global_seed(seed)
     learned_hc = learner_hc.learnBN()
     learner_miic = gum.BNLearner(tf.name)
     learner_miic.useMIIC()
+    set_global_seed(seed)
     learned_miic = learner_miic.learnBN()
     os.unlink(tf.name)
     rows = []
@@ -385,7 +414,7 @@ def run_structure_learning(bn, arcs, data, seed=SEED):
     rows = []
     for n in [100, 500, 1000]:
         sample_n = data.sample(n=n, random_state=seed)
-        for metrics in structure_metrics_for_sample(bn, arcs, sample_n):
+        for metrics in structure_metrics_for_sample(bn, arcs, sample_n, seed=seed):
             rows.append({"n": n, "seed": seed, **metrics})
     return pd.DataFrame(rows)
 
@@ -396,7 +425,7 @@ def run_structure_stability(bn, arcs, data, seeds=STABILITY_SEEDS):
         print(f"  structure stability run {i}/{len(seeds)} (seed={seed})")
         for n in [100, 500, 1000]:
             sample_n = data.sample(n=n, random_state=seed)
-            for metrics in structure_metrics_for_sample(bn, arcs, sample_n):
+            for metrics in structure_metrics_for_sample(bn, arcs, sample_n, seed=seed):
                 rows.append({"n": n, "seed": seed, **metrics})
     return pd.DataFrame(rows)
 
@@ -458,16 +487,19 @@ def infer_probs(model, df):
     return np.array(probs)
 
 
-def classification_scores(bn, train_cls, test_cls):
+def classification_scores(bn, train_cls, test_cls, seed=SEED):
+    set_global_seed(seed)
     train_csv = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
     train_csv.close()
     train_cls.to_csv(train_csv.name, index=False)
     learner_true = gum.BNLearner(train_csv.name, bn)
     learner_true.useSmoothingPrior()
+    set_global_seed(seed)
     bn_true_fitted = learner_true.learnParameters(bn.dag())
     learner_hc = gum.BNLearner(train_csv.name)
     learner_hc.useGreedyHillClimbing()
     learner_hc.useScoreBIC()
+    set_global_seed(seed)
     bn_hc = learner_hc.learnBN()
     clf_naive = skbn.BNClassifier(learningMethod="NaiveBayes", scoringType="BIC")
     clf_naive.fit(data=train_cls, targetName=TARGET)
@@ -492,24 +524,33 @@ def classification_scores(bn, train_cls, test_cls):
 
 
 def run_classification_stability(bn, data, seeds=STABILITY_SEEDS):
+    data_path = SYNTHETIC_CASES_CSV
+    if not data_path.is_file():
+        DATA_DIR = data_path.parent
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        data.to_csv(data_path, index=False)
+    CLASSIFICATION_STABILITY_CACHE.mkdir(parents=True, exist_ok=True)
     rows = []
     for i, seed in enumerate(seeds, start=1):
+        cache_path = CLASSIFICATION_STABILITY_CACHE / f"seed_{seed:03d}.json"
+        if cache_path.is_file():
+            print(f"  classification stability run {i}/{len(seeds)} (seed={seed}, cached)")
+            rows.extend(json.loads(cache_path.read_text(encoding="utf-8")))
+            continue
         print(f"  classification stability run {i}/{len(seeds)} (seed={seed})")
-        cls_pool = data.sample(n=300, random_state=seed)
-        train_cls, test_cls = train_test_split(
-            cls_pool,
-            train_size=100,
-            test_size=100,
-            random_state=seed,
-            stratify=cls_pool[TARGET],
+        env = os.environ.copy()
+        env["PYTHONHASHSEED"] = str(seed)
+        env.setdefault("OMP_NUM_THREADS", "1")
+        env.setdefault("MKL_NUM_THREADS", "1")
+        env.setdefault("OPENBLAS_NUM_THREADS", "1")
+        env.setdefault("NUMEXPR_NUM_THREADS", "1")
+        out = subprocess.check_output(
+            [sys.executable, str(WORKER), str(data_path), str(seed)],
+            env=env,
+            text=True,
         )
-        for result in classification_scores(bn, train_cls, test_cls):
-            rows.append({
-                "seed": seed,
-                "Model": result["Model"],
-                "AUC": result["AUC"],
-                "Accuracy": result["Accuracy"],
-            })
+        cache_path.write_text(out, encoding="utf-8")
+        rows.extend(json.loads(out))
     return pd.DataFrame(rows)
 
 
@@ -614,6 +655,7 @@ def fig_noisy_or(bn):
 
 
 def main():
+    set_global_seed(SEED)
     sns.set_theme(style="whitegrid")
     print("Building model...")
     bn, arcs = build_insider_bn()
@@ -621,14 +663,8 @@ def main():
     fig_dag(bn, arcs)
     print("Figure 2: Scenarios")
     fig_scenarios(bn)
-    print("Generating synthetic data...")
-    tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
-    tmp.close()
-    gen = gum.BNDatabaseGenerator(bn)
-    gen.drawSamples(2000)
-    gen.toCSV(tmp.name)
-    data = pd.read_csv(tmp.name)
-    os.unlink(tmp.name)
+    print(f"Loading synthetic data ({SYNTHETIC_CASES_CSV.name})...")
+    data = load_synthetic_cases(bn, n=N_SYNTHETIC_CASES, seed=SEED)
     cls_pool = data.sample(n=300, random_state=SEED)
     train_cls, test_cls = train_test_split(
         cls_pool,

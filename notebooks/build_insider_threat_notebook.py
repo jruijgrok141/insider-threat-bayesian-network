@@ -70,6 +70,7 @@ The outcome variable `InsiderThreatIncident` is the **class label** for Task 2.2
 |---------|---------|
 | `TARGET` | `InsiderThreatIncident` — same outcome name throughout |
 | `SEED = 42` | Reproducible samples and train/test split |
+| `set_global_seed` / `draw_synthetic_cases` | Fixed pyAgrum + NumPy RNG and topological sampling order |
 | `gum` / `gnb` | Build BN, inference, notebook visualisations |
 | `bnvsbn` | Compare ground-truth vs. learned network |
 | `skbn` | Naive Bayes classifier (Task 2.2b) |"""
@@ -94,11 +95,41 @@ import pyagrum as gum
 import pyagrum.skbn as skbn
 import pyagrum.lib.notebook as gnb
 import pyagrum.lib.bn_vs_bn as bnvsbn
+import pyagrum.skbn as skbn
+import seaborn as sns
+from sklearn.metrics import roc_curve, auc, accuracy_score
 
 TARGET = 'InsiderThreatIncident'
 SEED = 42
 sns.set_theme(style='whitegrid')
 plt.rcParams['figure.figsize'] = (10, 6)"""
+    ),
+    cell_code(
+        """import random
+
+def set_global_seed(seed):
+    gum.initRandom(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
+def draw_synthetic_cases(bn, n=2000, seed=SEED):
+    set_global_seed(seed)
+    gen = gum.BNDatabaseGenerator(bn)
+    gen.setTopologicalVarOrder()
+    gen.drawSamples(n)
+    return gen.to_pandas()
+
+def load_synthetic_cases(bn, n=2000, seed=SEED):
+    from pathlib import Path
+    for csv_path in (
+        Path('report/data/synthetic_cases_n2000_seed42.csv'),
+        Path('../report/data/synthetic_cases_n2000_seed42.csv'),
+    ):
+        if csv_path.is_file():
+            return pd.read_csv(csv_path)
+    return draw_synthetic_cases(bn, n=n, seed=seed)
+
+set_global_seed(SEED)"""
     ),
     cell_md(
         """### Step 2 — Build model (Task 1)
@@ -439,13 +470,7 @@ Assignment: synthetic data from the hand-built network; compare $n \\in \\{100,5
     ),
     cell_code(
         """# Synthetic data (pool for structure learning + separate classification set)
-tmp = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
-tmp.close()
-gen = gum.BNDatabaseGenerator(bn)
-gen.drawSamples(2000)
-gen.toCSV(tmp.name)
-data = pd.read_csv(tmp.name)
-os.unlink(tmp.name)
+data = load_synthetic_cases(bn, n=2000, seed=SEED)
 
 # Classification per assignment: Train=100, Test=100 (disjoint, stratified)
 cls_pool = data.sample(n=300, random_state=SEED)
@@ -477,6 +502,7 @@ true_skeleton = skeleton(arcs)
 rows = []
 for n in [100, 500, 1000]:
     sample_n = data.sample(n=n, random_state=SEED)
+    set_global_seed(SEED)
     tf = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
     tf.close()
     sample_n.to_csv(tf.name, index=False)
@@ -764,6 +790,7 @@ Assignment: class variable `InsiderThreatIncident`; ROC/AUC on Test (100 cases);
     ),
     cell_code(
         """# pyAgrum: original (causal DAG + learned parameters) vs learned HC vs naive Bayes
+set_global_seed(SEED)
 train_csv = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
 train_csv.close()
 train_cls.to_csv(train_csv.name, index=False)
@@ -854,44 +881,44 @@ def percentile_ci(values, lo=2.5, hi=97.5):
     arr = np.asarray(values, dtype=float)
     return float(np.mean(arr)), float(np.percentile(arr, lo)), float(np.percentile(arr, hi))
 
-def classification_scores_for_split(train_df, test_df):
-    train_tmp = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
-    train_tmp.close()
-    train_df.to_csv(train_tmp.name, index=False)
-    learner_true = gum.BNLearner(train_tmp.name, bn)
-    learner_true.useSmoothingPrior()
-    bn_fit = learner_true.learnParameters(bn.dag())
-    learner_hc = gum.BNLearner(train_tmp.name)
-    learner_hc.useGreedyHillClimbing()
-    learner_hc.useScoreBIC()
-    bn_hc_run = learner_hc.learnBN()
-    clf = skbn.BNClassifier(learningMethod='NaiveBayes', scoringType='BIC')
-    clf.fit(data=train_df, targetName=TARGET)
-    y = (test_df[TARGET] == 'yes').astype(int).to_numpy()
-    os.unlink(train_tmp.name)
-    out = {}
-    for name, probs in {
-        'Original BN + noisy-OR CPT': infer_probs(bn_fit, test_df),
-        'Learned BN HC': infer_probs(bn_hc_run, test_df),
-        'Naive Bayes': clf.predict_proba(test_df.drop(columns=[TARGET]))[:, 1],
-    }.items():
-        fpr, tpr, _ = roc_curve(y, probs)
-        out[name] = {
-            'AUC': auc(fpr, tpr),
-            'Accuracy': accuracy_score(y, (probs >= 0.5).astype(int)),
-        }
-    return out
+def repo_root():
+    from pathlib import Path
+    for candidate in (Path.cwd(), Path.cwd().parent):
+        if (candidate / 'report' / 'classification_stability_worker.py').is_file():
+            return candidate
+    raise FileNotFoundError('Could not locate report/classification_stability_worker.py')
 
-stability_rows = []
-for seed in STABILITY_SEEDS:
-    pool = data.sample(n=300, random_state=seed)
-    tr, te = train_test_split(
-        pool, train_size=100, test_size=100, random_state=seed, stratify=pool[TARGET]
-    )
-    for model, scores in classification_scores_for_split(tr, te).items():
-        stability_rows.append({'seed': seed, 'Model': model, **scores})
+def run_classification_stability_subprocess(data, seeds=STABILITY_SEEDS):
+    import json
+    import subprocess
+    import sys
+    root = repo_root()
+    data_path = root / 'report' / 'data' / 'synthetic_cases_n2000_seed42.csv'
+    cache_dir = root / 'report' / 'data' / 'classification_stability'
+    if not data_path.is_file():
+        data_path.parent.mkdir(parents=True, exist_ok=True)
+        data.to_csv(data_path, index=False)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    worker = root / 'report' / 'classification_stability_worker.py'
+    rows = []
+    for seed in seeds:
+        cache_path = cache_dir / f'seed_{seed:03d}.json'
+        if cache_path.is_file():
+            rows.extend(json.loads(cache_path.read_text(encoding='utf-8')))
+            continue
+        env = os.environ.copy()
+        env['PYTHONHASHSEED'] = str(seed)
+        env.setdefault('OMP_NUM_THREADS', '1')
+        out = subprocess.check_output(
+            [sys.executable, str(worker), str(data_path), str(seed)],
+            env=env,
+            text=True,
+        )
+        cache_path.write_text(out, encoding='utf-8')
+        rows.extend(json.loads(out))
+    return pd.DataFrame(rows)
 
-stability_df = pd.DataFrame(stability_rows)
+stability_df = run_classification_stability_subprocess(data)
 summary_rows = []
 for model, grp in stability_df.groupby('Model'):
     auc_mean, auc_lo, auc_hi = percentile_ci(grp['AUC'])

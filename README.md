@@ -61,6 +61,21 @@ jupyter notebook insider_threat_bn_prototype.ipynb
 
 Run all cells in order. The notebook covers Task 1 inference, single-run structure learning, classification (reference split + 30-resample stability), and noisy-OR. **Structure stability over 30 resamples** (report Table/Figure 3) is produced by `report/export_figures.py`, which also writes the CSV tables cited in the report.
 
+### Reproducibility
+
+All pipelines share the same conventions (`SEED = 42`, seeds 42–71 for stability):
+
+- `gum.initRandom(seed)` before pyAgrum sampling and structure learning
+- `setTopologicalVarOrder()` on `BNDatabaseGenerator` (deterministic variable order)
+- `numpy` / `random` seeded alongside pyAgrum
+- pandas `random_state` on subsamples and stratified splits
+
+Canonical helpers live in `report/reproducibility.py` (used by `export_figures.py`); the notebooks embed equivalent functions. Pinned artifacts: `report/data/synthetic_cases_n2000_seed42.csv` and `report/data/classification_stability/seed_*.json`. Verify with:
+
+```bash
+python scripts/verify_reproducibility.py
+```
+
 To regenerate report figures and numeric tables (authoritative for §3.2–3.4):
 
 ```bash
