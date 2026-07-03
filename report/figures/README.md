@@ -50,4 +50,6 @@ Each figure is saved as `.png` (for Markdown) and `.pdf` (for LaTeX).
 
 **Stability settings:** 30 resamples, seeds 42–71. Classification uses a new 300-case pool and stratified 100/100 split per seed. Original-BN parameter learning uses `useSmoothingPrior()` to handle unobserved parent configurations on small training sets.
 
+**Report alignment:** Tables in `Report_Insider_Threat_BN` §3.2–3.4 are taken from the CSV files in this folder. Regenerate figures and CSVs with `python report/export_figures.py` before updating the report PDF.
+
 

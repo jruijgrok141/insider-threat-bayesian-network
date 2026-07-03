@@ -151,7 +151,27 @@ High dissatisfaction & JD=high & 0.403 \\
 \end{figure}
 
 \subsection{Structure recovery}
-Figure~\ref{fig:structure} and Table~\ref{tab:structure} summarise learning from random subsets. Mean skeleton $F_1$ rises with~$n$; directed recovery stays harder for Hill Climbing, whereas MIIC reaches mean directed $F_1{\approx}0.95$ at $n{=}1000$.
+Figure~\ref{fig:structure} and Tables~\ref{tab:structure-ref}--\ref{tab:structure} summarise learning from random subsets. Table~\ref{tab:structure-ref} gives one reference run (seed~42); Table~\ref{tab:structure} aggregates 30 resamples. Mean skeleton $F_1$ rises with~$n$; directed recovery stays harder for Hill Climbing, whereas MIIC reaches mean directed $F_1{\approx}0.96$ at $n{=}1000$.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}rllccc@{}}
+\toprule
+$n$ & Algo. & Skeleton $F_1$ & Directed $F_1$ & Hamming \\
+\midrule
+100 & HC & 0.857 & 0.571 & 2 \\
+100 & MIIC & 0.857 & 0.286 & 2 \\
+500 & HC & 0.941 & 0.588 & 1 \\
+500 & MIIC & 1.000 & 1.000 & 0 \\
+1000 & HC & 0.889 & 0.111 & 2 \\
+1000 & MIIC & 1.000 & 1.000 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Reference structure-learning metrics (seed~42).}
+\label{tab:structure-ref}
+\end{table}
 
 \begin{figure}[H]
   \centering
@@ -168,22 +188,22 @@ Figure~\ref{fig:structure} and Table~\ref{tab:structure} summarise learning from
 \toprule
 $n$ & Algo. & Skeleton $F_1$ [95\% CI] & Directed $F_1$ [95\% CI] \\
 \midrule
-100 & HC & 0.838 [0.687, 1.000] & 0.383 [0.000, 0.618] \\
-100 & MIIC & 0.854 [0.687, 1.000] & 0.352 [0.000, 0.821] \\
-500 & HC & 0.953 [0.786, 1.000] & 0.494 [0.131, 0.784] \\
-500 & MIIC & 0.996 [0.933, 1.000] & 0.761 [0.397, 1.000] \\
-1000 & HC & 0.941 [0.842, 1.000] & 0.455 [0.000, 0.838] \\
-1000 & MIIC & 1.000 [1.000, 1.000] & 0.954 [0.875, 1.000] \\
+100 & HC & 0.807 [0.593, 0.933] & 0.341 [0.091, 0.618] \\
+100 & MIIC & 0.818 [0.653, 0.933] & 0.391 [0.000, 0.800] \\
+500 & HC & 0.966 [0.861, 1.000] & 0.519 [0.201, 0.784] \\
+500 & MIIC & 0.985 [0.917, 1.000] & 0.855 [0.518, 1.000] \\
+1000 & HC & 0.963 [0.889, 1.000] & 0.514 [0.111, 0.875] \\
+1000 & MIIC & 1.000 [1.000, 1.000] & 0.963 [0.841, 1.000] \\
 \bottomrule
 \end{tabular}
 \caption{Structure recovery stability (mean and 95\% CI over 30 resamples).}
 \label{tab:structure}
 \end{table}
 
-Mean skeleton $F_1$ rises with~$n$ for both algorithms. Directed recovery stays harder for Hill Climbing; MIIC reaches mean directed $F_1{\approx}0.95$ at $n{=}1000$, so constraint-based search appears better suited to orientation when the ground truth is known.
+Mean skeleton $F_1$ rises with~$n$ for both algorithms. Directed recovery stays harder for Hill Climbing; MIIC reaches mean directed $F_1{\approx}0.96$ at $n{=}1000$, so constraint-based search appears better suited to orientation when the ground truth is known.
 
 \subsection{Classification}
-Reference and stability results appear in Tables~\ref{tab:classifiers}--\ref{tab:class-stability} and Figures~\ref{fig:roc}--\ref{fig:class-stability}. On one split, AUC ranges from 0.683 to 0.704; over 30 resamples the 95\% intervals overlap and no classifier clearly dominates.
+Reference and stability results appear in Tables~\ref{tab:classifiers}--\ref{tab:class-stability} and Figures~\ref{fig:roc}--\ref{fig:class-stability}. On one split, AUC ranges from 0.700 to 0.717; over 30 resamples the 95\% intervals overlap and no classifier clearly dominates.
 
 \begin{table}[H]
 \centering
@@ -192,9 +212,9 @@ Reference and stability results appear in Tables~\ref{tab:classifiers}--\ref{tab
 \toprule
 Model & AUC & Accuracy \\
 \midrule
-Original BN & 0.683 & 0.64 \\
-Learned BN (HC) & 0.695 & 0.64 \\
-Naive Bayes & 0.704 & 0.68 \\
+Original BN & 0.713 & 0.64 \\
+Learned BN (HC) & 0.700 & 0.64 \\
+Naive Bayes & 0.717 & 0.65 \\
 \bottomrule
 \end{tabular}
 \caption{Reference test performance on held-out cases.}
@@ -216,9 +236,9 @@ Naive Bayes & 0.704 & 0.68 \\
 \toprule
 Model & AUC [95\% CI] & Accuracy [95\% CI] \\
 \midrule
-Original BN & 0.743 [0.675, 0.798] & 0.686 [0.626, 0.733] \\
-Learned BN (HC) & 0.685 [0.468, 0.830] & 0.683 [0.640, 0.745] \\
-Naive Bayes & 0.715 [0.599, 0.796] & 0.682 [0.625, 0.750] \\
+Original BN & 0.764 [0.692, 0.844] & 0.700 [0.629, 0.770] \\
+Learned BN (HC) & 0.736 [0.582, 0.844] & 0.721 [0.635, 0.796] \\
+Naive Bayes & 0.757 [0.664, 0.832] & 0.722 [0.645, 0.783] \\
 \bottomrule
 \end{tabular}
 \caption{Classification stability over 30 resamples.}
@@ -257,7 +277,7 @@ Classification on repeated stratified 100/100 splits yielded overlapping 95\% AU
 Noisy-OR reduced the incident node from seven to four free parameters while preserving monotonic multi-cause risk---a useful trade-off for interpretability and elicitation effort in a small expert model.
 
 \subsection{Limitations}
-The evaluation is deliberately inward-looking. Learning data are simulated from the same BN that defines the ground truth, so structure and classification metrics measure recoverability rather than external validity. CPTs reflect expert judgement and are not calibrated on operational insider-incident records. The scope is limited to malicious insiders in a static People--Process--Technology graph, consistent with many published models but narrower than combined insider--outsider threats \cite{chockalingam2017}; temporal evolution of HR signals and alert streams (e.g.\ via dynamic BNs) is not modelled. Train and test sets are small ($n{=}100$ each), which widens confidence intervals: overlapping 95\% AUC bands (e.g.\ original BN $0.743$ vs.\ naive Bayes $0.715$) do not support a definitive ranking of classifiers.
+The evaluation is deliberately inward-looking. Learning data are simulated from the same BN that defines the ground truth, so structure and classification metrics measure recoverability rather than external validity. CPTs reflect expert judgement and are not calibrated on operational insider-incident records. The scope is limited to malicious insiders in a static People--Process--Technology graph, consistent with many published models but narrower than combined insider--outsider threats \cite{chockalingam2017}; temporal evolution of HR signals and alert streams (e.g.\ via dynamic BNs) is not modelled. Train and test sets are small ($n{=}100$ each), which widens confidence intervals: overlapping 95\% AUC bands (e.g.\ original BN $0.764$ vs.\ naive Bayes $0.757$) do not support a definitive ranking of classifiers.
 
 \subsection{Implications and future work}
 Expert causal structure still earns its place under data scarcity: it explains \emph{why} a score rises when concerning behaviour and weak controls coincide, and it remains competitive on average with learned alternatives. The pipeline should be read as a proof of concept, not as validation on live security-operations data or as an autonomous detection system. Any deployment would require mandatory human review, auditability of evidence, and clear separation between prioritisation support and disciplinary action.
@@ -267,7 +287,7 @@ A realistic next step is to map operational feeds---identity management, policy 
 \section*{Data and code availability}
 \label{sec:data-code}
 
-All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at \href{https://github.com/jruijgrok141/insider-threat-bayesian-network}{github.com/jruijgrok141/insider-threat-bayesian-network} (MIT license). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
+All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at \href{https://github.com/jruijgrok141/insider-threat-bayesian-network}{github.com/jruijgrok141/insider-threat-bayesian-network} (MIT license). Numeric tables in \S\ref{sec:results} match \texttt{report/figures/*.csv}, generated by \texttt{report/export\_figures.py} (structure stability uses 30 resamples there; the notebook reproduces classification stability and single-run structure learning). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
 
 \clearpage
 \bibliographystyle{plain}

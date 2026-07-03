@@ -22,7 +22,7 @@ Checklist against the Bayesian Reasoning and Learning assignment requirements.
 
 | Requirement | Status | Note |
 |-------------|--------|------|
-| pyAgrum tutorials | ⚪ | Not submitted; briefly mentioned in report §2.3 |
+| pyAgrum tutorials | ⚪ | Not submitted; explored during the course (not detailed in the report) |
 
 ## Task 2.2 — Learning from data
 
@@ -44,7 +44,7 @@ Checklist against the Bayesian Reasoning and Learning assignment requirements.
 |---------|--------|------|
 | Abstract + notation tables | ✅ | `report/Report_Insider_Threat_BN.{md,tex}` |
 | Introduction | ✅ | same |
-| Methods (RQ1–RQ4, setup, learning) | ✅ | same |
+| Methods (setup, network, learning) | ✅ | same; RQ1–RQ4 in proposal |
 | Results (inference, structure, ROC, noisy-OR) | ✅ | same + `figures/*.pdf` |
 | Conclusions and discussion | ✅ | same |
 | References | ✅ | same (bib in `.tex`; inline in `.md`) |
@@ -58,6 +58,7 @@ Checklist against the Bayesian Reasoning and Learning assignment requirements.
 
 ## Artifacts in this repository
 
-- **Prototype:** `notebooks/insider_threat_bn_prototype.ipynb`
+- **Prototype:** `notebooks/insider_threat_bn_prototype.ipynb` (classification stability; structure single-run)
+- **Figure export:** `report/export_figures.py` (all report tables + structure stability over 30 resamples)
 - **Report:** `report/Report_Insider_Threat_BN.md` (+ `.tex`, `.pdf`)
 - **Proposal:** `proposal/Research_Proposal_Cybersecurity_Insider_Threat.md`

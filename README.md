@@ -13,7 +13,7 @@ An **8-node causal Bayesian network** for insider-related cyber security risk, b
 |----------|-------------|
 | [Report (PDF)](report/Report_Insider_Threat_BN.pdf) | Short report (~7 pages main text + references) |
 | [Report (Markdown)](report/Report_Insider_Threat_BN.md) | Same content, readable on GitHub |
-| [Notebook (HTML)](docs/insider_threat_bn_prototype.html) | Executed 8-node analysis — no Python required |
+| [Notebook (HTML)](docs/insider_threat_bn_prototype.html) | Executed 8-node analysis — no Python required (regenerate after notebook or `export_figures.py`) |
 | [Notebook (`.ipynb`)](notebooks/insider_threat_bn_prototype.ipynb) | Full reproducible pipeline |
 | [Toy walkthrough (HTML)](docs/toy_4node_walkthrough.html) | Executed 4-node teaching notebook |
 | [Toy walkthrough (`.ipynb`)](notebooks/toy_4node_walkthrough.ipynb) | Minimal 4-node pipeline (same steps as assignment) |
@@ -59,12 +59,18 @@ cd notebooks
 jupyter notebook insider_threat_bn_prototype.ipynb
 ```
 
-Run all cells in order. The full pipeline (including stability runs) takes a few minutes.
+Run all cells in order. The notebook covers Task 1 inference, single-run structure learning, classification (reference split + 30-resample stability), and noisy-OR. **Structure stability over 30 resamples** (report Table/Figure 3) is produced by `report/export_figures.py`, which also writes the CSV tables cited in the report.
 
-To regenerate report figures:
+To regenerate report figures and numeric tables (authoritative for §3.2–3.4):
 
 ```bash
 python report/export_figures.py
+```
+
+To refresh the executed HTML in `docs/` (after running the notebook or `export_figures.py`):
+
+```bash
+jupyter nbconvert --execute --to html notebooks/insider_threat_bn_prototype.ipynb --output insider_threat_bn_prototype --output-dir docs
 ```
 
 To regenerate the notebook from its Python builder:

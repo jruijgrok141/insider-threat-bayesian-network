@@ -116,27 +116,27 @@ Training subsets are drawn from the \(N=2000\) synthetic sample; learned structu
 
 | \(n\) | Algorithm | Skeleton F1 | Directed F1 | Hamming |
 |------|-----------|-------------|-------------|---------|
-| 100 | HillClimb | 0.667 | 0.400 | 5 |
-| 100 | MIIC | 0.667 | 0.400 | 5 |
-| 500 | HillClimb | 0.824 | 0.118 | 3 |
-| 500 | MIIC | 0.933 | 0.667 | 1 |
-| 1000 | HillClimb | 0.889 | 0.222 | 2 |
+| 100 | HillClimb | 0.857 | 0.571 | 2 |
+| 100 | MIIC | 0.857 | 0.286 | 2 |
+| 500 | HillClimb | 0.941 | 0.588 | 1 |
+| 500 | MIIC | 1.000 | 1.000 | 0 |
+| 1000 | HillClimb | 0.889 | 0.111 | 2 |
 | 1000 | MIIC | 1.000 | 1.000 | 0 |
 
 Figure 3 plots mean skeleton and directed \(F_1\) with 95% intervals over 30 resamples.
 
 ![Structure recovery vs. sample size](figures/fig03_structure_recovery.png)
 
-Stability summary:
+Stability summary (30 resamples; see `figures/table_structure_stability.csv`):
 
 | \(n\) | Algorithm | Skeleton F1 (mean [95% CI]) | Directed F1 (mean [95% CI]) |
 |------|-----------|------------------------------|------------------------------|
-| 100 | HillClimb | 0.838 [0.687, 1.000] | 0.383 [0.000, 0.618] |
-| 100 | MIIC | 0.854 [0.687, 1.000] | 0.352 [0.000, 0.821] |
-| 500 | HillClimb | 0.953 [0.786, 1.000] | 0.494 [0.131, 0.784] |
-| 500 | MIIC | 0.996 [0.933, 1.000] | 0.761 [0.397, 1.000] |
-| 1000 | HillClimb | 0.941 [0.842, 1.000] | 0.455 [0.000, 0.838] |
-| 1000 | MIIC | 1.000 [1.000, 1.000] | 0.954 [0.875, 1.000] |
+| 100 | HillClimb | 0.807 [0.593, 0.933] | 0.341 [0.091, 0.618] |
+| 100 | MIIC | 0.818 [0.653, 0.933] | 0.391 [0.000, 0.800] |
+| 500 | HillClimb | 0.966 [0.861, 1.000] | 0.519 [0.201, 0.784] |
+| 500 | MIIC | 0.985 [0.917, 1.000] | 0.855 [0.518, 1.000] |
+| 1000 | HillClimb | 0.963 [0.889, 1.000] | 0.514 [0.111, 0.875] |
+| 1000 | MIIC | 1.000 [1.000, 1.000] | 0.963 [0.841, 1.000] |
 
 **Interpretation:** Mean skeleton \(F_1\) rises with \(n\) for both algorithms. Directed recovery remains harder and more variable for Hill Climbing; intervals stay wide at all \(n\). MIIC reaches mean directed \(F_1 \approx 0.95\) at \(n=1000\) with a narrower band. Constraint-based learning can therefore outperform greedy search on arrow direction when the generating graph is known, even though both algorithms see the same data.
 
@@ -146,9 +146,9 @@ One reference train–test split; three classifiers target the incident outcome.
 
 | Model | AUC | Accuracy |
 |-------|-----|----------|
-| Original BN + noisy-OR CPT | 0.683 | 0.64 |
-| Learned BN HC | 0.695 | 0.64 |
-| Naive Bayes | 0.704 | 0.68 |
+| Original BN + noisy-OR CPT | 0.713 | 0.64 |
+| Learned BN HC | 0.700 | 0.64 |
+| Naive Bayes | 0.717 | 0.65 |
 
 Figure 4 compares the three classifiers on this single test set.
 
@@ -158,9 +158,9 @@ Figure 4 compares the three classifiers on this single test set.
 
 | Model | AUC (mean [95% CI]) | Accuracy (mean [95% CI]) |
 |-------|---------------------|---------------------------|
-| Original BN + noisy-OR CPT | 0.743 [0.675, 0.798] | 0.686 [0.626, 0.733] |
-| Learned BN HC | 0.685 [0.468, 0.830] | 0.683 [0.640, 0.745] |
-| Naive Bayes | 0.715 [0.599, 0.796] | 0.682 [0.625, 0.750] |
+| Original BN + noisy-OR CPT | 0.764 [0.692, 0.844] | 0.700 [0.629, 0.770] |
+| Learned BN HC | 0.736 [0.582, 0.844] | 0.721 [0.635, 0.796] |
+| Naive Bayes | 0.757 [0.664, 0.832] | 0.722 [0.645, 0.783] |
 
 ![Classification stability over 30 resamples](figures/fig06_classification_stability.png)
 
@@ -191,7 +191,7 @@ Scenario inference produced stable, interpretable risk estimates. High- and low-
 
 ### 4.2 Limitations
 
-The evaluation is inward-looking: simulated learning data measure recoverability of a known graph, not external validity; CPTs reflect expert judgement, not operational calibration. The scope is a static malicious-insider People–Process–Technology graph (Chockalingam et al., 2017); temporal HR and alert dynamics (e.g. dynamic BNs) are not modelled. Small train and test sets (\(n=100\) each) widen intervals: overlapping 95% AUC bands (original BN 0.743 vs. naive Bayes 0.715) do not support definitive classifier ranking.
+The evaluation is inward-looking: simulated learning data measure recoverability of a known graph, not external validity; CPTs reflect expert judgement, not operational calibration. The scope is a static malicious-insider People–Process–Technology graph (Chockalingam et al., 2017); temporal HR and alert dynamics (e.g. dynamic BNs) are not modelled. Small train and test sets (\(n=100\) each) widen intervals: overlapping 95% AUC bands (e.g. original BN 0.764 vs. naive Bayes 0.757) do not support definitive classifier ranking.
 
 ### 4.3 Implications and future work
 
@@ -201,7 +201,7 @@ Expert causal structure explains *why* risk rises and remains competitive on ave
 
 ## Data and code availability
 
-All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at [https://github.com/jruijgrok141/insider-threat-bayesian-network](https://github.com/jruijgrok141/insider-threat-bayesian-network) (MIT license). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
+All analysis code, the reproducible Jupyter notebook, exported report figures, and supplementary materials are publicly available at [https://github.com/jruijgrok141/insider-threat-bayesian-network](https://github.com/jruijgrok141/insider-threat-bayesian-network) (MIT license). Numeric tables in §3.2–3.4 match `report/figures/*.csv`, generated by `report/export_figures.py` (structure stability uses 30 resamples there; the notebook reproduces classification stability and single-run structure learning). Structure-learning and classification experiments use synthetically generated cases drawn from the expert-specified Bayesian network described in this report; no identifiable employee or operational security records were used.
 
 ---
 
