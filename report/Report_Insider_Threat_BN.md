@@ -2,7 +2,7 @@
 
 **Course:** Bayesian Reasoning and Learning  
 **Author:** Jan Ruijgrok  
-**Institution:** Open Universiteit Nederland  
+**Institution:** Open University of the Netherlands  
 **Language:** English  
 **Target length:** ~6 pages (main text; appendix optional)
 

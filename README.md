@@ -3,9 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](requirements.txt)
 
-An **8-node causal Bayesian network** for insider-related cyber security risk, built for the master course *Bayesian Reasoning and Learning* (Open Universiteit Nederland).
+An **8-node causal Bayesian network** for insider-related cyber security risk, built for the master course *Bayesian Reasoning and Learning* (Open University of the Netherlands).
 
-**Author:** Jan Ruijgrok · **Institution:** Open Universiteit Nederland
+**Author:** Jan Ruijgrok · **Institution:** Open University of the Netherlands
 
 ## Quick links
 
@@ -95,4 +95,4 @@ MIT — see [LICENSE](LICENSE). Background reference PDFs remain subject to thei
 
 ## Acknowledgments
 
-Course: *Bayesian Reasoning and Learning*, Open Universiteit Nederland. Built with [pyAgrum](https://agrum.gitlab.io/).
+Course: *Bayesian Reasoning and Learning*, Open University of the Netherlands. Built with [pyAgrum](https://agrum.gitlab.io/).
