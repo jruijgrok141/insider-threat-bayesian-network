@@ -3,6 +3,7 @@
 | File | Purpose |
 |------|---------|
 | `insider_threat_bn_prototype.ipynb` | Full pipeline: expert BN (Task 1), structure learning and classification (Task 2.2), noisy-OR |
+| `toy_4node_walkthrough.ipynb` | Minimal 4-node walkthrough of the same assignment steps (teaching / quick demo) |
 | `build_insider_threat_notebook.py` | Regenerates the prototype notebook from source |
 
 ## Regenerate

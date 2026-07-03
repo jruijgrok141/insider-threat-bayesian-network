@@ -13,8 +13,10 @@ An **8-node causal Bayesian network** for insider-related cyber security risk, b
 |----------|-------------|
 | [Report (PDF)](report/Report_Insider_Threat_BN.pdf) | Short report (~7 pages main text + references) |
 | [Report (Markdown)](report/Report_Insider_Threat_BN.md) | Same content, readable on GitHub |
-| [Notebook (HTML)](docs/insider_threat_bn_prototype.html) | Executed analysis — no Python required |
+| [Notebook (HTML)](docs/insider_threat_bn_prototype.html) | Executed 8-node analysis — no Python required |
 | [Notebook (`.ipynb`)](notebooks/insider_threat_bn_prototype.ipynb) | Full reproducible pipeline |
+| [Toy walkthrough (HTML)](docs/toy_4node_walkthrough.html) | Executed 4-node teaching notebook |
+| [Toy walkthrough (`.ipynb`)](notebooks/toy_4node_walkthrough.ipynb) | Minimal 4-node pipeline (same steps as assignment) |
 | [Research proposal](proposal/Research_Proposal_Cybersecurity_Insider_Threat.md) | Domain scope and research questions |
 
 ![Causal DAG (8 nodes)](report/figures/fig01_dag.png)
@@ -39,10 +41,10 @@ insider-threat-bayesian-network/
 │   ├── Report_Insider_Threat_BN.{tex,md}
 │   ├── export_figures.py
 │   └── figures/
-├── notebooks/               # Prototype notebook + generator
+├── notebooks/               # Prototype + toy walkthrough notebooks
 ├── proposal/                # Research proposal
 ├── references/              # Open-access background papers
-├── docs/                    # HTML export (GitHub Pages)
+├── docs/                    # HTML exports (GitHub Pages)
 └── scripts/
     └── build_delivery.py    # Assemble a submission zip folder locally
 ```
