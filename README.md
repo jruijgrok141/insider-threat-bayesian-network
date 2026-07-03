@@ -11,7 +11,7 @@ An **8-node causal Bayesian network** for insider-related cyber security risk, b
 
 | Resource | Description |
 |----------|-------------|
-| [Report (PDF)](report/Report_Insider_Threat_BN.pdf) | Short report (~7 pages main text + references) |
+| [Report (PDF)](report/Report_Insider_Threat_BN.pdf) | Short report (8 pages; references on the final page) |
 | [Report (Markdown)](report/Report_Insider_Threat_BN.md) | Same content, readable on GitHub |
 | [Notebook (HTML)](docs/insider_threat_bn_prototype.html) | Executed 8-node analysis — no Python required (regenerate after notebook or `export_figures.py`) |
 | [Notebook (`.ipynb`)](notebooks/insider_threat_bn_prototype.ipynb) | Full reproducible pipeline |
